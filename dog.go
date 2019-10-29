@@ -22,21 +22,32 @@ func testAllTlds(domain_prefix string) ([]string) {
 
 	var wg sync.WaitGroup
 
-	results := []string{}
+	email_channel := make(chan string)
 
 	for _, x := range tlds {
 		wg.Add(1)
 		go func (x string) {
+			defer wg.Done()
 
 			email := emailFromDomain(domain_prefix + x)
 			
 			if (email != "" && len(strings.Split(email, " ")) == 1 && strings.Contains(email, "@")) {
-				results = append(results, []string{email, domain_prefix+x}...)
+				email_channel <- email
 			}
-			defer wg.Done()
 		} (x)
 	}
-	wg.Wait()
+
+	var results []string 
+
+	go func () {
+		wg.Wait()
+		close(email_channel)
+	} () 
+
+	for email := range email_channel {
+		fmt.Println(email)
+		results = append(results, email)
+	}
 
 	return results
 }
