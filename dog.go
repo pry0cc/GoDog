@@ -18,19 +18,17 @@ type DomainDogResult struct {
 }
 
 func main() {
-parser := argparse.NewParser("print", "Prints provided string to stdout")
-	// Create string flag
+	parser := argparse.NewParser("print", "Prints provided string to stdout")
 	l := parser.String("l", "list", &argparse.Options{Required: true, Help: "Domain to list results for"})
-	// Parse input
 	err := parser.Parse(os.Args)
 	if err != nil {
-		// In case of error print error and print usage
-		// This can also be done by passing -h or --help flags
 		fmt.Print(parser.Usage(err))
 	}
 
 	results := testAllTlds(*l)
-	printJsonResults(results)	
+	for _, result := range results {
+		fmt.Println(result.DomainName + ":" + result.RegistrantEmail)
+	} 
 }
 
 
