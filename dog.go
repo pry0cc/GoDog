@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/likexian/whois-go"
 	"github.com/likexian/whois-parser-go"
+	"github.com/akamensky/argparse"
 	"sync"
 	"encoding/json"
 	"strings"
+	"os"
 )
 
 
@@ -16,8 +18,18 @@ type DomainDogResult struct {
 }
 
 func main() {
+parser := argparse.NewParser("print", "Prints provided string to stdout")
+	// Create string flag
+	l := parser.String("l", "list", &argparse.Options{Required: true, Help: "Domain to list results for"})
+	// Parse input
+	err := parser.Parse(os.Args)
+	if err != nil {
+		// In case of error print error and print usage
+		// This can also be done by passing -h or --help flags
+		fmt.Print(parser.Usage(err))
+	}
 
-	results := testAllTlds("dyson")
+	results := testAllTlds(*l)
 	printJsonResults(results)	
 }
 
@@ -41,7 +53,7 @@ func testAllTlds(domain_prefix string) ([]DomainDogResult) {
 			if (email != "" && len(strings.Split(email, " ")) == 1 && strings.Contains(email, "@")) {
 
 				result_channel <- DomainDogResult{
-					DomainName: x,
+					DomainName: domain_prefix + x,
 					RegistrantEmail: email,
 				}
 			}
